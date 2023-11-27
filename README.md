@@ -1,4 +1,4 @@
-# nano_back
+# Nano (Backend part)
 
 ## Overview
 
