@@ -43,17 +43,9 @@ Make sure you have the following installed:
 ## Configuration
 Configure your application by updating the `config.py` file with the necessary settings.
 
-## Database Setup
-If your application uses a database, provide instructions on how to set it up:
-```bash
-python manage.py db init
-python manage.py db migrate
-python manage.py db upgrade
-```
-
 ## Running the Application
 ```bash
-python app.py
+uvicorn main:app --reload
 ```
 
 Your app will be accessible at `http://localhost:8000`.
