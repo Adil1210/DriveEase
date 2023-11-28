@@ -1,13 +1,14 @@
+import jwt
+
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from passlib.context import CryptContext
 
 from app.api.models.auth import UserInDB, Token, User
-from app.core.config import get_settings
-from passlib.context import CryptContext
+from app.core.config import settings
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-settings = get_settings()
 
 fake_users_db = []
 
@@ -25,24 +26,25 @@ def get_user(db, username: str):
 
 
 def create_user(db, user: UserInDB):
-    db.append(user.dict())
+    db.append(user.model_dump())
     return user
 
 
 @router.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordBearer = Depends(oauth2_scheme)):
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = get_user(fake_users_db, form_data.username)
     if not user or not verify_password(form_data.password, user["hashed_password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # Here, you would normally generate a JWT token
-    # For simplicity, we are returning the username as the access token
-    return {"access_token": form_data.username, "token_type": "bearer"}
+    token_data = {"sub": form_data.username}
+    access_token = jwt.encode(token_data, settings.secret_key, algorithm="HS256")
+
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 @router.post("/register", response_model=User)
 async def register(user: User):
     hashed_password = pwd_context.hash(user.password)
-    user_db = UserInDB(**user.dict(), hashed_password=hashed_password)
+    user_db = UserInDB(**user.model_dump(), hashed_password=hashed_password)
     create_user(fake_users_db, user_db)
     return user
