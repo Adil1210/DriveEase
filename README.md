@@ -56,4 +56,4 @@ python manage.py db upgrade
 python app.py
 ```
 
-Your app will be accessible at `http://localhost:5000`.
+Your app will be accessible at `http://localhost:8000`.
